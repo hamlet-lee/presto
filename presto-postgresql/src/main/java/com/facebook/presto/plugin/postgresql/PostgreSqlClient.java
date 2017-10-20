@@ -19,6 +19,8 @@ import com.facebook.presto.plugin.jdbc.DriverConnectionFactory;
 import com.facebook.presto.plugin.jdbc.JdbcConnectorId;
 import com.facebook.presto.plugin.jdbc.JdbcOutputTableHandle;
 import com.facebook.presto.spi.type.Type;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import org.postgresql.Driver;
 
 import javax.inject.Inject;
@@ -28,6 +30,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
+
+import static com.facebook.presto.spi.type.TinyintType.TINYINT;
 
 import static com.facebook.presto.spi.type.VarbinaryType.VARBINARY;
 
@@ -88,6 +93,9 @@ public class PostgreSqlClient
             return "bytea";
         }
 
+        if (TINYINT.equals(type)) {
+            return "smallint";
+        }
         return super.toSqlType(type);
     }
 }
