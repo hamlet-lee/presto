@@ -25,6 +25,7 @@ public class MySqlConfig
     private boolean autoReconnect = true;
     private int maxReconnects = 3;
     private Duration connectionTimeout = new Duration(10, TimeUnit.SECONDS);
+//    private List<String> schemaRealNames = ImmutableList.of(); ;
 
     public boolean isAutoReconnect()
     {
@@ -62,4 +63,15 @@ public class MySqlConfig
         this.connectionTimeout = connectionTimeout;
         return this;
     }
+
+//    public List<String> getSchemaRealNames() {
+//        return schemaRealNames;
+//    }
+//
+//    @Config("mysql.schema-real-names")
+//    public MySqlConfig setSchemaRealNames(String schemaRealNames)
+//    {
+//        this.schemaRealNames = ImmutableList.copyOf(Splitter.on(',').omitEmptyStrings().trimResults().split(schemaRealNames));
+//        return this;
+//    }
 }
