@@ -158,7 +158,15 @@ public class JdbcRecordSink
     public void appendString(byte[] value)
     {
         try {
-            statement.setString(next(), new String(value, UTF_8));
+            //fix invalid utf8 sequence which contains 0x00
+            int posNewLen = value.length;
+            for (int i = 0; i < value.length; i++) {
+                if (value[i] == 0x0) {
+                    posNewLen = i;
+                    break;
+                }
+            }
+            statement.setString(next(), new String(value, 0, posNewLen, UTF_8));
         }
         catch (SQLException e) {
             throw new PrestoException(JDBC_ERROR, e);
