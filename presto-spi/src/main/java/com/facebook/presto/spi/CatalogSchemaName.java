@@ -26,7 +26,8 @@ public final class CatalogSchemaName
     public CatalogSchemaName(String catalogName, String schemaName)
     {
         this.catalogName = requireNonNull(catalogName, "catalogName is null").toLowerCase(ENGLISH);
-        this.schemaName = requireNonNull(schemaName, "schemaName is null").toLowerCase(ENGLISH);
+        //this.schemaName = requireNonNull(schemaName, "schemaName is null").toLowerCase(ENGLISH);
+        this.schemaName = requireNonNull(schemaName, "schemaName is null");
     }
 
     public String getCatalogName()
