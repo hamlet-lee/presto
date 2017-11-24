@@ -32,6 +32,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.Locale.ENGLISH;
@@ -39,6 +40,8 @@ import static java.util.Locale.ENGLISH;
 public class MySqlClient
         extends BaseJdbcClient
 {
+    private Set<String> schemaRealNames = new HashSet<>();
+
     @Inject
     public MySqlClient(JdbcConnectorId connectorId, BaseJdbcConfig config, MySqlConfig mySqlConfig)
             throws SQLException
@@ -55,6 +58,7 @@ public class MySqlClient
         if (mySqlConfig.getConnectionTimeout() != null) {
             connectionProperties.setProperty("connectTimeout", String.valueOf(mySqlConfig.getConnectionTimeout().toMillis()));
         }
+//        this.schemaRealNames = mySqlConfig.getSchemaRealNames();
     }
 
     @Override
@@ -65,7 +69,14 @@ public class MySqlClient
                 ResultSet resultSet = connection.getMetaData().getCatalogs()) {
             ImmutableSet.Builder<String> schemaNames = ImmutableSet.builder();
             while (resultSet.next()) {
+                String realName = resultSet.getString("TABLE_CAT");
                 String schemaName = resultSet.getString("TABLE_CAT").toLowerCase(ENGLISH);
+                //if have case difference, we can remember the difference
+                if (!realName.equals(schemaName)) {
+                    if (!schemaRealNames.contains(realName)) {
+                        schemaRealNames.add(realName);
+                    }
+                }
                 // skip internal schemas
                 if (!schemaName.equals("information_schema") && !schemaName.equals("mysql")) {
                     schemaNames.add(schemaName);
@@ -82,6 +93,13 @@ public class MySqlClient
     public PreparedStatement getPreparedStatement(Connection connection, String sql)
             throws SQLException
     {
+        for (String realName : schemaRealNames) {
+            String unrealName = realName.toLowerCase(ENGLISH);
+            int pos = sql.indexOf("`" + unrealName + "`");
+            if (pos >= 0) {
+                sql = sql.replaceAll("`" + unrealName + "`", "`" + realName + "`");
+            }
+        }
         PreparedStatement statement = connection.prepareStatement(sql);
         if (statement.isWrapperFor(Statement.class)) {
             statement.unwrap(Statement.class).enableStreamingResults();
@@ -96,11 +114,22 @@ public class MySqlClient
         // MySQL maps their "database" to SQL catalogs and does not have schemas
         DatabaseMetaData metadata = connection.getMetaData();
         String escape = metadata.getSearchStringEscape();
+        String realSchemaName = fixSchemaName(schemaName);
         return metadata.getTables(
-                schemaName,
+                realSchemaName,
                 null,
                 escapeNamePattern(tableName, escape),
-                new String[] {"TABLE", "VIEW"});
+                new String[]{"TABLE", "VIEW"});
+    }
+
+    private String fixSchemaName(String schemaName)
+    {
+        for (String realSchemaName : schemaRealNames) {
+            if (realSchemaName.toLowerCase(ENGLISH).equals(schemaName)) {
+                return realSchemaName;
+            }
+        }
+        return schemaName;
     }
 
     @Override
