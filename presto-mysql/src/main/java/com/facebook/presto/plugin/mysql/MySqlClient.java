@@ -121,11 +121,12 @@ public class MySqlClient
                 realSchemaName,
                 null,
                 escapeNamePattern(tableName, escape),
-                new String[]{"TABLE", "VIEW"});
+                new String[] {"TABLE", "VIEW"});
     }
 
-    private String fixTableName(String tableName) {
-        if( tableName == null ) {
+    private String fixTableName(String tableName)
+    {
+        if (tableName == null) {
             return null;
         }
         for (String realTableName : tableRealNames) {
@@ -155,7 +156,7 @@ public class MySqlClient
         String realTableName = resultSet.getString("TABLE_NAME");
         String schemaName = realSchemaName.toLowerCase(ENGLISH);
         String tableName = realTableName.toLowerCase(ENGLISH);
-        if( !tableName.equals(realTableName)) {
+        if (!tableName.equals(realTableName)) {
             tableRealNames.add(realTableName);
         }
         return new SchemaTableName(schemaName, tableName);
