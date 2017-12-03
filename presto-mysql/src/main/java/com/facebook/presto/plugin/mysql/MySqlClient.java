@@ -41,6 +41,7 @@ public class MySqlClient
         extends BaseJdbcClient
 {
     private Set<String> schemaRealNames = new HashSet<>();
+    private Set<String> tableRealNames = new HashSet<>();
 
     @Inject
     public MySqlClient(JdbcConnectorId connectorId, BaseJdbcConfig config, MySqlConfig mySqlConfig)
@@ -115,11 +116,24 @@ public class MySqlClient
         DatabaseMetaData metadata = connection.getMetaData();
         String escape = metadata.getSearchStringEscape();
         String realSchemaName = fixSchemaName(schemaName);
+        String realTableName = fixTableName(tableName);
         return metadata.getTables(
                 realSchemaName,
                 null,
                 escapeNamePattern(tableName, escape),
                 new String[]{"TABLE", "VIEW"});
+    }
+
+    private String fixTableName(String tableName) {
+        if( tableName == null ) {
+            return null;
+        }
+        for (String realTableName : tableRealNames) {
+            if (realTableName.toLowerCase(ENGLISH).equals(tableName)) {
+                return realTableName;
+            }
+        }
+        return tableName;
     }
 
     private String fixSchemaName(String schemaName)
@@ -137,9 +151,14 @@ public class MySqlClient
             throws SQLException
     {
         // MySQL uses catalogs instead of schemas
-        return new SchemaTableName(
-                resultSet.getString("TABLE_CAT").toLowerCase(ENGLISH),
-                resultSet.getString("TABLE_NAME").toLowerCase(ENGLISH));
+        String realSchemaName = resultSet.getString("TABLE_CAT");
+        String realTableName = resultSet.getString("TABLE_NAME");
+        String schemaName = realSchemaName.toLowerCase(ENGLISH);
+        String tableName = realTableName.toLowerCase(ENGLISH);
+        if( !tableName.equals(realTableName)) {
+            tableRealNames.add(realTableName);
+        }
+        return new SchemaTableName(schemaName, tableName);
     }
 
     @Override
