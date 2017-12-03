@@ -142,7 +142,7 @@ public class MySqlClient
         // MySQL maps their "database" to SQL catalogs and does not have schemas
         if (tableName != null) {
             //force a call to get real table names
-            super.getTables(connection, schemaName, null);
+            super.getTableNames(schemaName);
         }
         DatabaseMetaData metadata = connection.getMetaData();
         String escape = metadata.getSearchStringEscape();
