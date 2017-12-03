@@ -120,7 +120,7 @@ public class MySqlClient
         return metadata.getTables(
                 realSchemaName,
                 null,
-                escapeNamePattern(tableName, escape),
+                escapeNamePattern(realTableName, escape),
                 new String[] {"TABLE", "VIEW"});
     }
 
