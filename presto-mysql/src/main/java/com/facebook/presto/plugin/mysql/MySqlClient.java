@@ -33,8 +33,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Properties;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import static com.facebook.presto.plugin.jdbc.DriverConnectionFactory.basicConnectionProperties;
