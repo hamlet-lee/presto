@@ -71,7 +71,9 @@ public class CassandraTokenSplitManager
         }
 
         Optional<TokenRing> tokenRing = createForPartitioner(session.getPartitioner());
-        long totalPartitionsCount = getTotalPartitionsCount(keyspace, table);
+//        long totalPartitionsCount = getTotalPartitionsCount(keyspace, table);
+        // lisn: try bypass version checking
+        long totalPartitionsCount = 100;
 
         List<TokenSplit> splits = new ArrayList<>();
         for (TokenRange tokenRange : tokenRanges) {
