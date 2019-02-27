@@ -18,7 +18,10 @@ import com.datastax.driver.core.Row;
 import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.predicate.NullableValue;
 import com.facebook.presto.spi.type.Type;
+import com.youdao.analysis.util.SpeedLimiter;
 import io.airlift.slice.Slice;
+
+import javax.annotation.processing.Processor;
 
 import java.util.List;
 
@@ -32,6 +35,13 @@ public class CassandraRecordCursor
     private final ResultSet rs;
     private Row currentRow;
     private long count;
+    private static SpeedLimiter speedLimiter = new SpeedLimiter(10000, new SpeedLimiter.ProcessFunction() {
+        @Override
+        public void process(Object o)
+        {
+            //do nothing
+        }
+    });
 
     public CassandraRecordCursor(CassandraSession cassandraSession, List<FullCassandraType> fullCassandraTypes, String cql)
     {
@@ -43,6 +53,9 @@ public class CassandraRecordCursor
     @Override
     public boolean advanceNextPosition()
     {
+        // hamlet-lee: just for limit speed
+        speedLimiter.process(null);
+
         if (!rs.isExhausted()) {
             currentRow = rs.one();
             count++;

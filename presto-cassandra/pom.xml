@@ -165,6 +165,12 @@
             <artifactId>testing</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.youdao.analysis</groupId>
+            <artifactId>speed-limiter</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -191,4 +197,11 @@
             </plugin>
         </plugins>
     </build>
+    <repositories>
+        <repository>
+            <id>youdao</id>
+            <name>youdao nexus</name>
+            <url>http://nexus.corp.youdao.com/nexus/content/repositories/releases</url>
+        </repository>
+    </repositories>
 </project>
