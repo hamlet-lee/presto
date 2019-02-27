@@ -21,8 +21,6 @@ import com.facebook.presto.spi.type.Type;
 import com.youdao.analysis.util.SpeedLimiter;
 import io.airlift.slice.Slice;
 
-import javax.annotation.processing.Processor;
-
 import java.util.List;
 
 import static io.airlift.slice.Slices.utf8Slice;
