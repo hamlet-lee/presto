@@ -33,7 +33,7 @@ public class CassandraRecordCursor
     private final ResultSet rs;
     private Row currentRow;
     private long count;
-    private static SpeedLimiter speedLimiter = new SpeedLimiter(500, new SpeedLimiter.ProcessFunction()
+    private static SpeedLimiter speedLimiter = new SpeedLimiter(Integer.parseInt(System.getProperty("CASSANDRA_LIMIT_PER_SEC", "1000")), new SpeedLimiter.ProcessFunction()
     {
         @Override
         public void process(Object o)
