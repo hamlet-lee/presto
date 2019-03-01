@@ -19,12 +19,14 @@ import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.predicate.NullableValue;
 import com.facebook.presto.spi.type.Type;
 import com.youdao.analysis.util.SpeedLimiter;
+import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
 
 import java.util.List;
 
 import static io.airlift.slice.Slices.utf8Slice;
 import static java.lang.Float.floatToRawIntBits;
+import static java.lang.Float.max;
 
 public class CassandraRecordCursor
         implements RecordCursor
@@ -33,6 +35,7 @@ public class CassandraRecordCursor
     private final ResultSet rs;
     private Row currentRow;
     private long count;
+    private static final Logger log = Logger.get(CassandraRecordCursor.class);
     private static SpeedLimiter speedLimiter = new SpeedLimiter(Integer.parseInt(System.getProperty("CASSANDRA_LIMIT_PER_SEC", "1000")), new SpeedLimiter.ProcessFunction()
     {
         @Override
@@ -55,7 +58,33 @@ public class CassandraRecordCursor
         // hamlet-lee: just for limit speed
         speedLimiter.process(null);
 
-        if (!rs.isExhausted()) {
+        boolean isExhausted = false;
+        Throwable t = null;
+        int maxTry = 10;
+        int nTry;
+        for (nTry = 0; nTry < maxTry; nTry++) {
+            try {
+                if (nTry > 0) {
+                    log.info("retry " + nTry);
+                }
+                isExhausted = rs.isExhausted();
+                break;
+            }
+            catch (Exception e) {
+                log.error("error, sleep 3 sec for retry", e);
+                try {
+                    Thread.sleep(3000L);
+                }
+                catch (InterruptedException e1) {
+
+                }
+                t = e;
+            }
+        }
+        if (nTry == maxTry) {
+            throw new RuntimeException(t);
+        }
+        if (!isExhausted) {
             currentRow = rs.one();
             count++;
             return true;
