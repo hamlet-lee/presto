@@ -26,7 +26,6 @@ import java.util.List;
 
 import static io.airlift.slice.Slices.utf8Slice;
 import static java.lang.Float.floatToRawIntBits;
-import static java.lang.Float.max;
 
 public class CassandraRecordCursor
         implements RecordCursor
@@ -76,7 +75,6 @@ public class CassandraRecordCursor
                     Thread.sleep(3000L);
                 }
                 catch (InterruptedException e1) {
-
                 }
                 t = e;
             }
