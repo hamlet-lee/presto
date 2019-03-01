@@ -43,6 +43,7 @@ public class CassandraRecordCursor
             //do nothing
         }
     });
+    private static int maxTry = Integer.parseInt(System.getProperty("CASSANDRA_RETRY", "60"));
 
     public CassandraRecordCursor(CassandraSession cassandraSession, List<FullCassandraType> fullCassandraTypes, String cql)
     {
@@ -59,7 +60,6 @@ public class CassandraRecordCursor
 
         boolean isExhausted = false;
         Throwable t = null;
-        int maxTry = 10;
         int nTry;
         for (nTry = 0; nTry < maxTry; nTry++) {
             try {
