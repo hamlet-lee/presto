@@ -100,8 +100,8 @@ public class CassandraSplitManager
         return builder.build();
     }
 
-    static private final String MAX_BOUND = Long.toString(Long.MIN_VALUE);
-    static private final String SAFE_MAX_BOUND = Long.toString(Long.MAX_VALUE);
+    private static final String MAX_BOUND = Long.toString(Long.MIN_VALUE);
+    private static final String SAFE_MAX_BOUND = Long.toString(Long.MAX_VALUE);
 
     private static String buildTokenCondition(String tokenExpression, String startToken, String endToken)
     {
