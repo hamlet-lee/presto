@@ -48,7 +48,31 @@ public class CassandraRecordCursor
     public CassandraRecordCursor(CassandraSession cassandraSession, List<FullCassandraType> fullCassandraTypes, String cql)
     {
         this.fullCassandraTypes = fullCassandraTypes;
-        rs = cassandraSession.execute(cql);
+        Throwable t = null;
+        int nTry;
+        ResultSet myRs = null;
+        for (nTry = 0; nTry < maxTry; nTry++) {
+            try {
+                if (nTry > 0) {
+                    log.info("retry " + nTry);
+                }
+                myRs = cassandraSession.execute(cql);
+                break;
+            }
+            catch (Throwable e) {
+                log.error("error", e);
+                try {
+                    Thread.sleep(3000L);
+                }
+                catch (InterruptedException e1) {
+                }
+                t = e;
+            }
+        }
+        if (nTry == maxTry) {
+            throw new RuntimeException(t);
+        }
+        rs = myRs;
         currentRow = null;
     }
 
