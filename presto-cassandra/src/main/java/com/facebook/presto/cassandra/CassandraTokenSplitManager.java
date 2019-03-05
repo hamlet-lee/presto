@@ -105,7 +105,10 @@ public class CassandraTokenSplitManager
                 splits.add(createSplit(subRange, endpoints));
             }
         }
-        shuffle(splits, ThreadLocalRandom.current());
+        boolean enableShuffle = Boolean.parseBoolean(System.getProperty("CASSANDRA_ENABLE_SHUFFLE", "true"));
+        if (enableShuffle) {
+            shuffle(splits, ThreadLocalRandom.current());
+        }
         return unmodifiableList(splits);
     }
 
