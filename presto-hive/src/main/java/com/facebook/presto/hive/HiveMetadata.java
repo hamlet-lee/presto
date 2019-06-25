@@ -253,7 +253,18 @@ public class HiveMetadata
     @Override
     public List<String> listSchemaNames(ConnectorSession session)
     {
-        return metastore.getAllDatabases();
+        String list = System.getProperty("hive_database_white_list");
+        if(list != null) {
+            List<String> tempList = new ArrayList<>();
+            tempList.addAll(metastore.getAllDatabases());
+            String[] dbList = list.split(",");
+            for(String db: dbList) {
+                tempList.remove(db);
+            }
+            return tempList;
+        } else {
+            return metastore.getAllDatabases();
+        }
     }
 
     @Override
