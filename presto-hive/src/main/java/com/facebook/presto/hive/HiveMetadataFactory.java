@@ -25,6 +25,7 @@ import org.joda.time.DateTimeZone;
 
 import javax.inject.Inject;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import static java.util.Objects.requireNonNull;
@@ -50,6 +51,7 @@ public class HiveMetadataFactory
     private final BoundedExecutor renameExecution;
     private final TypeTranslator typeTranslator;
     private final String prestoVersion;
+    private final List<String> whiteListSchemas;
 
     @Inject
     @SuppressWarnings("deprecation")
@@ -78,6 +80,7 @@ public class HiveMetadataFactory
                 hiveClientConfig.getCreatesOfNonManagedTablesEnabled(),
                 hiveClientConfig.getPerTransactionMetastoreCacheMaximumSize(),
                 hiveClientConfig.getMaxPartitionsPerScan(),
+                hiveClientConfig.getWhiteListSchema(),
                 typeManager,
                 locationService,
                 tableParameterCodec,
@@ -99,6 +102,7 @@ public class HiveMetadataFactory
             boolean createsOfNonManagedTablesEnabled,
             long perTransactionCacheMaximumSize,
             int maxPartitions,
+            List<String> whiteListSchemas,
             TypeManager typeManager,
             LocationService locationService,
             TableParameterCodec tableParameterCodec,
@@ -124,6 +128,7 @@ public class HiveMetadataFactory
         this.typeTranslator = requireNonNull(typeTranslator, "typeTranslator is null");
         this.prestoVersion = requireNonNull(prestoVersion, "prestoVersion is null");
         this.maxPartitions = maxPartitions;
+        this.whiteListSchemas = whiteListSchemas;
 
         if (!allowCorruptWritesForTesting && !timeZone.equals(DateTimeZone.getDefault())) {
             log.warn("Hive writes are disabled. " +
@@ -158,6 +163,8 @@ public class HiveMetadataFactory
                 typeTranslator,
                 prestoVersion,
                 new MetastoreHiveStatisticsProvider(typeManager, metastore, timeZone),
-                maxPartitions);
+                maxPartitions,
+                whiteListSchemas
+                );
     }
 }

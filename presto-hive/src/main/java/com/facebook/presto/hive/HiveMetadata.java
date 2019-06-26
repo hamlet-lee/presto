@@ -209,6 +209,7 @@ public class HiveMetadata
     private final String prestoVersion;
     private final HiveStatisticsProvider hiveStatisticsProvider;
     private final int maxPartitions;
+    private final List<String> whiteListSchemas;
 
     public HiveMetadata(
             SemiTransactionalHiveMetastore metastore,
@@ -225,7 +226,8 @@ public class HiveMetadata
             TypeTranslator typeTranslator,
             String prestoVersion,
             HiveStatisticsProvider hiveStatisticsProvider,
-            int maxPartitions)
+            int maxPartitions,
+            List<String> whiteListSchemas)
     {
         this.allowCorruptWritesForTesting = allowCorruptWritesForTesting;
 
@@ -244,6 +246,7 @@ public class HiveMetadata
         this.hiveStatisticsProvider = requireNonNull(hiveStatisticsProvider, "hiveStatisticsProvider is null");
         checkArgument(maxPartitions >= 1, "maxPartitions must be at least 1");
         this.maxPartitions = maxPartitions;
+        this.whiteListSchemas = whiteListSchemas;
     }
 
     public SemiTransactionalHiveMetastore getMetastore()
@@ -254,12 +257,10 @@ public class HiveMetadata
     @Override
     public List<String> listSchemaNames(ConnectorSession session)
     {
-        String list = System.getProperty("hive_database_white_list");
-        if(list != null) {
+        if(whiteListSchemas != null && !whiteListSchemas.isEmpty()) {
             List<String> tempList = new ArrayList<>();
-            List<String> dbWhiteList = Arrays.asList(list.split(","));
             for(String db: metastore.getAllDatabases()) {
-                if(dbWhiteList.contains(db)) {
+                if(whiteListSchemas.contains(db)) {
                     tempList.add(db);
                 }
             }
