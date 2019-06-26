@@ -164,7 +164,6 @@ public class HiveMetadataFactory
                 prestoVersion,
                 new MetastoreHiveStatisticsProvider(typeManager, metastore, timeZone),
                 maxPartitions,
-                whiteListSchemas
-                );
+                whiteListSchemas);
     }
 }
