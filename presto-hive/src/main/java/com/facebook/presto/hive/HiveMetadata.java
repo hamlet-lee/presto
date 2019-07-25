@@ -85,7 +85,6 @@ import org.joda.time.DateTimeZone;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -257,15 +256,16 @@ public class HiveMetadata
     @Override
     public List<String> listSchemaNames(ConnectorSession session)
     {
-        if(whiteListSchemas != null && !whiteListSchemas.isEmpty()) {
+        if (whiteListSchemas != null && !whiteListSchemas.isEmpty()) {
             List<String> tempList = new ArrayList<>();
-            for(String db: metastore.getAllDatabases()) {
-                if(whiteListSchemas.contains(db)) {
+            for (String db : metastore.getAllDatabases()) {
+                if (whiteListSchemas.contains(db)) {
                     tempList.add(db);
                 }
             }
             return tempList;
-        } else {
+        }
+        else {
             return metastore.getAllDatabases();
         }
     }
