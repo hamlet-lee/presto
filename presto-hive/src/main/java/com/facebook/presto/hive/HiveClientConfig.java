@@ -95,6 +95,7 @@ public class HiveClientConfig
     private int writeValidationThreads = 16;
 
     private List<String> resourceConfigFiles;
+    private List<String> whiteListSchemas;
 
     private boolean useParquetColumnNames;
     private boolean parquetOptimizedReaderEnabled;
@@ -1043,5 +1044,17 @@ public class HiveClientConfig
     public boolean isTableStatisticsEnabled()
     {
         return tableStatisticsEnabled;
+    }
+
+    @Config("hive.white-list.schema")
+    public HiveClientConfig setWhiteListSchema(String schemas)
+    {
+        this.whiteListSchemas = (schemas == null) ? null : SPLITTER.splitToList(schemas);
+        return this;
+    }
+
+    public List<String> getWhiteListSchema()
+    {
+        return whiteListSchemas;
     }
 }
