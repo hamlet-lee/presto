@@ -100,8 +100,16 @@ public class CassandraSplitManager
         return builder.build();
     }
 
+    private static final String MAX_BOUND = Long.toString(Long.MIN_VALUE);
+    private static final String SAFE_MAX_BOUND = Long.toString(Long.MAX_VALUE);
+
     private static String buildTokenCondition(String tokenExpression, String startToken, String endToken)
     {
+        if (endToken.equals(MAX_BOUND)) {
+            // hamlet-lee: cassandra 2.1.3 一旦碰到 token(imei) > 9221758439172857653 AND token(imei) <= -9223372036854775808
+            // 就会出错。将其改写成 ...  AND token(imei) <= 9223372036854775807 就能成功
+            return tokenExpression + " > " + startToken + " AND " + tokenExpression + " <= " + SAFE_MAX_BOUND;
+        }
         return tokenExpression + " > " + startToken + " AND " + tokenExpression + " <= " + endToken;
     }
 

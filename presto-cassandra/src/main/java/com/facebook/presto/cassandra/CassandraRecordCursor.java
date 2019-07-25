@@ -18,6 +18,8 @@ import com.datastax.driver.core.Row;
 import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.predicate.NullableValue;
 import com.facebook.presto.spi.type.Type;
+import com.youdao.analysis.util.SpeedLimiter;
+import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
 
 import java.util.List;
@@ -32,18 +34,79 @@ public class CassandraRecordCursor
     private final ResultSet rs;
     private Row currentRow;
     private long count;
+    private static final Logger log = Logger.get(CassandraRecordCursor.class);
+    private static SpeedLimiter speedLimiter = new SpeedLimiter(Integer.parseInt(System.getProperty("CASSANDRA_LIMIT_PER_SEC", "1000")), new SpeedLimiter.ProcessFunction()
+    {
+        @Override
+        public void process(Object o)
+        {
+            //do nothing
+        }
+    });
+    private static int maxTry = Integer.parseInt(System.getProperty("CASSANDRA_RETRY", "60"));
 
     public CassandraRecordCursor(CassandraSession cassandraSession, List<FullCassandraType> fullCassandraTypes, String cql)
     {
         this.fullCassandraTypes = fullCassandraTypes;
-        rs = cassandraSession.execute(cql);
+        Throwable t = null;
+        int nTry;
+        ResultSet myRs = null;
+        for (nTry = 0; nTry < maxTry; nTry++) {
+            try {
+                if (nTry > 0) {
+                    log.info("retry " + nTry);
+                }
+                myRs = cassandraSession.execute(cql);
+                break;
+            }
+            catch (Throwable e) {
+                log.error("error", e);
+                try {
+                    Thread.sleep(3000L);
+                }
+                catch (InterruptedException e1) {
+                }
+                t = e;
+            }
+        }
+        if (nTry == maxTry) {
+            throw new RuntimeException(t);
+        }
+        rs = myRs;
         currentRow = null;
     }
 
     @Override
     public boolean advanceNextPosition()
     {
-        if (!rs.isExhausted()) {
+        // hamlet-lee: just for limit speed
+        speedLimiter.process(null);
+
+        boolean isExhausted = false;
+        Throwable t = null;
+        int nTry;
+        for (nTry = 0; nTry < maxTry; nTry++) {
+            try {
+                if (nTry > 0) {
+                    log.info("retry " + nTry);
+                }
+                isExhausted = rs.isExhausted();
+                break;
+            }
+            catch (Exception e) {
+                log.error("error, sleep 3 sec for retry", e);
+                try {
+                    Thread.sleep(3000L);
+                }
+                catch (InterruptedException e1) {
+                }
+                t = e;
+            }
+        }
+        if (nTry == maxTry) {
+            throw new RuntimeException(t);
+        }
+        if (!isExhausted) {
             currentRow = rs.one();
             count++;
             return true;
